@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amirelle — Your AI Style Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#fdf8f4;
+  --surface:#fff;
+  --card:#faf6f2;
+  --accent:#c9a96e;
+  --accent2:#b07d9f;
+  --text:#1a1008;
+  --muted:#9a8878;
+  --border:#ede5db;
+  --shadow:0 2px 24px rgba(180,140,100,0.10);
+}
+
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;transition:background 0.8s,color 0.8s}
+
+body.dark{--bg:#0f0c0a;--surface:#181410;--card:#1e1a16;--text:#f5ede4;--muted:#8a7a6a;--border:#2a2318;--shadow:0 2px 24px rgba(0,0,0,0.4)}
+body.rainy{--bg:#e8eef5;--surface:#f0f4f9;--card:#e4eaf2;--accent:#6b8cba;--accent2:#7a9bc4}
+body.cold{--bg:#edf2f7;--surface:#f5f8fc;--card:#e8eef5;--accent:#7090b0;--accent2:#8a6db0}
+body.bold{--bg:#1a0808;--surface:#200e0e;--card:#2a1212;--text:#f5e8e0;--muted:#9a6a60;--border:#3a1a18;--accent:#e05030;--accent2:#c04020}
+
+.deco-left,.deco-right{position:fixed;top:0;bottom:0;width:80px;pointer-events:none;z-index:0;display:flex;flex-direction:column;justify-content:space-around;padding:40px 0;opacity:0.18}
+.deco-left{left:0;align-items:flex-start;padding-left:12px}
+.deco-right{right:0;align-items:flex-end;padding-right:12px}
+.deco-fig{font-size:28px;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--accent);writing-mode:vertical-rl;letter-spacing:4px;transition:all 0.8s}
+
+main{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:0 20px 60px}
+
+/* WELCOME SCREEN */
+#welcome{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px}
+.welcome-tag{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:20px;font-weight:500}
+.welcome-title{font-family:'Cormorant Garamond',serif;font-size:clamp(56px,12vw,100px);font-style:italic;line-height:0.9;margin-bottom:24px;color:var(--text)}
+.welcome-title span{color:var(--accent);display:block}
+.weather-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 40px;margin:32px 0;min-width:280px}
+.weather-icon{font-size:52px;margin-bottom:8px}
+.weather-label{font-size:13px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.weather-text{font-family:'Cormorant Garamond',serif;font-size:28px;font-style:italic;color:var(--text)}
+.weather-sub{font-size:13px;color:var(--muted);margin-top:6px}
+.mood-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:20px 0}
+.mood-btn{background:var(--card);border:1px solid var(--border);border-radius:30px;padding:8px 18px;font-size:13px;color:var(--muted);cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif}
+.mood-btn:hover,.mood-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.occasion-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:0 0 28px}
+.occ-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px;color:var(--muted);cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif}
+.occ-btn:hover,.occ-btn.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.enter-btn{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:16px 40px;font-size:15px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
+.enter-btn:hover{opacity:0.88;transform:translateY(-2px)}
+
+/* APP SCREENS */
+#app{display:none}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:24px 0 20px}
+.logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:32px;color:var(--text)}
+.logo span{color:var(--accent)}
+.nav-tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:4px}
+.tab{padding:8px 18px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--muted);transition:all 0.2s;font-weight:500;border:none;background:transparent;font-family:'Inter',sans-serif}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+
+/* WARDROBE */
+#screen-wardrobe{display:none}
+.wardrobe-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.wardrobe-header h2{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:28px}
+.add-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;font-weight:500}
+.add-btn:hover{opacity:0.88}
+.category-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.cat-tab{padding:6px 16px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:all 0.2s;font-family:'Inter',sans-serif}
+.cat-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cupboard{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.cloth-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all 0.22s;position:relative}
+.cloth-card:hover{border-color:var(--accent);transform:translateY(-3px)}
+.cloth-card.selected{border-color:var(--accent2);box-shadow:0 0 0 2px var(--accent2)}
+.cloth-img{width:100%;height:140px;object-fit:cover;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:40px}
+.cloth-img img{width:100%;height:100%;object-fit:cover}
+.cloth-info{padding:8px 10px}
+.cloth-name{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cloth-cat{font-size:11px;color:var(--muted);margin-top:2px}
+.cloth-del{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1}
+.cloth-card:hover .cloth-del{display:flex}
+.empty-wardrobe{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-wardrobe .big{font-size:52px;margin-bottom:12px}
+.empty-wardrobe p{font-size:15px;line-height:1.7}
+
+/* ADD MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:20px;padding:32px;width:100%;max-width:400px;border:1px solid var(--border)}
+.modal h3{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:26px;margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-group label{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px}
+.form-group input,.form-group select{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent)}
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--card)}
+.upload-zone:hover{border-color:var(--accent)}
+.upload-zone input{display:none}
+.upload-preview{width:100%;height:160px;object-fit:cover;border-radius:10px;margin-top:10px;display:none}
+.modal-btns{display:flex;gap:10px;margin-top:20px}
+.btn-cancel{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;cursor:pointer;color:var(--muted);font-family:'Inter',sans-serif}
+.btn-save{flex:1;background:var(--accent);border:none;border-radius:10px;padding:12px;font-size:14px;cursor:pointer;color:#fff;font-family:'Inter',sans-serif;font-weight:500}
+
+/* SUGGEST SCREEN */
+#screen-suggest{display:none}
+.suggest-header{margin-bottom:28px}
+.suggest-header h2{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:28px;margin-bottom:6px}
+.suggest-header p{font-size:14px;color:var(--muted)}
+.context-bar{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:24px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.ctx-item{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.ctx-item strong{color:var(--text)}
+.suggest-btn{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px 32px;font-size:15px;cursor:pointer;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;transition:all 0.2s;margin-bottom:28px;width:100%}
+.suggest-btn:hover{opacity:0.88}
+.suggest-btn:disabled{opacity:0.5;cursor:not-allowed}
+.result-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;display:none}
+.result-outfit{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.outfit-piece{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;width:100px;flex-shrink:0}
+.outfit-piece .piece-img{height:100px;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--card)}
+.outfit-piece .piece-img img{width:100%;height:100%;object-fit:cover}
+.outfit-piece .piece-label{padding:6px 8px;font-size:11px;color:var(--muted);text-align:center}
+.result-desc{font-size:15px;line-height:1.8;color:var(--text);font-family:'Cormorant Garamond',serif;font-size:18px;border-left:3px solid var(--accent);padding-left:16px;margin-top:16px}
+.loading-style{text-align:center;padding:32px;display:none}
+.loading-style p{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:var(--muted);animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0.5}50%{opacity:1}}
+.no-clothes-msg{text-align:center;padding:32px;color:var(--muted);font-size:15px}
+
+/* API KEY */
+.api-section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px}
+.api-section label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px}
+.api-section input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;outline:none}
+
+@media(max-width:600px){
+  .deco-left,.deco-right{display:none}
+  .cupboard{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<div class="deco-left">
+  <div class="deco-fig" id="deco1">élégance</div>
+  <div class="deco-fig" id="deco2">style</div>
+  <div class="deco-fig" id="deco3">mode</div>
+</div>
+<div class="deco-right">
+  <div class="deco-fig" id="deco4">chic</div>
+  <div class="deco-fig" id="deco5">vogue</div>
+  <div class="deco-fig" id="deco6">allure</div>
+</div>
+
+<!-- WELCOME SCREEN -->
+<div id="welcome">
+  <div class="welcome-tag">Your AI Style Companion</div>
+  <div class="welcome-title">
+    Ami<span>relle</span>
+  </div>
+
+  <div class="weather-card">
+    <div class="weather-icon" id="weatherIcon">☀️</div>
+    <div class="weather-label">Today in Pune</div>
+    <div class="weather-text" id="weatherText">Sunny & Warm</div>
+    <div class="weather-sub" id="weatherSub">Perfect for light, breezy outfits</div>
+  </div>
+
+  <div style="margin-bottom:8px;font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">How are you feeling?</div>
+  <div class="mood-row">
+    <button class="mood-btn active" data-mood="confident">✨ Confident</button>
+    <button class="mood-btn" data-mood="chill">🌿 Chill</button>
+    <button class="mood-btn" data-mood="happy">🌸 Happy</button>
+    <button class="mood-btn" data-mood="bold">🔥 Bold</button>
+    <button class="mood-btn" data-mood="soft">🤍 Soft</button>
+  </div>
+
+  <div style="margin:16px 0 8px;font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">Where are you going?</div>
+  <div class="occasion-row">
+    <button class="occ-btn active" data-occ="college">🎓 College</button>
+    <button class="occ-btn" data-occ="casual">👟 Casual</button>
+    <button class="occ-btn" data-occ="party">🎉 Party</button>
+    <button class="occ-btn" data-occ="date">💕 Date</button>
+    <button class="occ-btn" data-occ="home">🏠 Home</button>
+  </div>
+
+  <button class="enter-btn" onclick="enterApp()">Open My Wardrobe →</button>
+</div>
+
+<!-- MAIN APP -->
+<main id="app">
+  <div class="top-bar">
+    <div class="logo">Ami<span>relle</span></div>
+    <div class="nav-tabs">
+      <button class="tab active" onclick="showScreen('wardrobe',this)">Wardrobe</button>
+      <button class="tab" onclick="showScreen('suggest',this)">Get Outfit</button>
+    </div>
+  </div>
+
+  <!-- WARDROBE SCREEN -->
+  <div id="screen-wardrobe">
+    <div class="wardrobe-header">
+      <h2>My Wardrobe</h2>
+      <button class="add-btn" onclick="openModal()">+ Add Clothes</button>
+    </div>
+    <div class="category-tabs">
+      <button class="cat-tab active" data-cat="all" onclick="filterCat(this)">All</button>
+      <button class="cat-tab" data-cat="tops" onclick="filterCat(this)">Tops</button>
+      <button class="cat-tab" data-cat="bottoms" onclick="filterCat(this)">Bottoms</button>
+      <button class="cat-tab" data-cat="dresses" onclick="filterCat(this)">Dresses</button>
+      <button class="cat-tab" data-cat="shoes" onclick="filterCat(this)">Shoes</button>
+      <button class="cat-tab" data-cat="accessories" onclick="filterCat(this)">Accessories</button>
+      <button class="cat-tab" data-cat="outerwear" onclick="filterCat(this)">Outerwear</button>
+    </div>
+    <div class="cupboard" id="cupboard"></div>
+  </div>
+
+  <!-- SUGGEST SCREEN -->
+  <div id="screen-suggest">
+    <div class="suggest-header">
+      <h2>Today's Outfit</h2>
+      <p>Let Amirelle style you from your wardrobe ✨</p>
+    </div>
+
+    <div class="context-bar">
+      <div class="ctx-item">🌤️ <span><strong id="ctxWeather">Sunny</strong></span></div>
+      <div class="ctx-item">✨ <span>Feeling <strong id="ctxMood">Confident</strong></span></div>
+      <div class="ctx-item">🎓 <span>Going to <strong id="ctxOcc">College</strong></span></div>
+      <div class="ctx-item">👗 <span><strong id="ctxCount">0</strong> clothes in wardrobe</span></div>
+    </div>
+
+    <button class="suggest-btn" id="suggestBtn" onclick="getOutfit()">✨ Style Me Today</button>
+
+    <div class="loading-style" id="loadingStyle">
+      <p>Amirelle is curating your perfect look...</p>
+    </div>
+
+    <div class="result-box" id="resultBox">
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;margin-bottom:16px;color:var(--text)">Your look for today</div>
+      <div class="result-outfit" id="resultOutfit"></div>
+      <div class="result-desc" id="resultDesc"></div>
+    </div>
+  </div>
+</main>
+
+<!-- ADD CLOTHES MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>Add to Wardrobe</h3>
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" id="clothName" placeholder="e.g. White floral kurta" />
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="clothCat">
+        <option value="tops">Tops</option>
+        <option value="bottoms">Bottoms</option>
+        <option value="dresses">Dresses</option>
+        <option value="shoes">Shoes</option>
+        <option value="accessories">Accessories</option>
+        <option value="outerwear">Outerwear</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Colour</label>
+      <input type="text" id="clothColor" placeholder="e.g. Dusty pink" />
+    </div>
+    <div class="form-group">
+      <label>Photo</label>
+      <div class="upload-zone" onclick="document.getElementById('clothPhoto').click()">
+        <div style="font-size:28px;margin-bottom:6px">📸</div>
+        <div style="font-size:13px;color:var(--muted)">Tap to upload photo</div>
+        <input type="file" id="clothPhoto" accept="image/*" onchange="previewPhoto(this)">
+        <img id="photoPreview" class="upload-preview" />
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveCloth()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const GEMINI_API_KEY = "AQ.Ab8RN6Kv-Pda7wG76qOLT9hLgyFbfXqAfOLUCZ5GJtdl86OgMQ";
+
+const WEATHER_THEMES = [
+  {label:'Sunny & Warm',icon:'☀️',sub:'Perfect for light, breezy outfits',theme:'',decos:['élégance','style','soleil','chic','lumière','doré']},
+  {label:'Hot & Humid',icon:'🌤️',sub:'Stay cool and fresh today',theme:'',decos:['fraîche','légère','été','cool','airy','breezy']},
+  {label:'Cloudy',icon:'⛅',sub:'Layer up with soft neutrals',theme:'',decos:['nuage','soft','muted','calm','haze','doux']},
+  {label:'Rainy',icon:'🌧️',sub:'Cozy layers and rain-ready looks',theme:'rainy',decos:['pluie','cozy','sombre','moody','layers','wrap']},
+  {label:'Cold Morning',icon:'🌫️',sub:'Warm tones and cozy knits',theme:'cold',decos:['hiver','knit','warm','laine','duvet','cocon']},
+  {label:'Bold & Bright',icon:'🌈',sub:'Express yourself boldly today',theme:'bold',decos:['audace','bold','vivid','éclat','couleur','fire']},
+];
+
+let currentWeather = WEATHER_THEMES[0];
+let selectedMood = 'confident';
+let selectedOcc = 'college';
+let clothes = JSON.parse(localStorage.getItem('amirelle_clothes') || '[]');
+let currentCat = 'all';
+
+async function initWeather(){
+  try{
+    const res = await fetch('https://wttr.in/Pune?format=j1');
+    const data = await res.json();
+    const code = parseInt(data.current_condition[0].weatherCode);
+    const tempC = parseInt(data.current_condition[0].temp_C);
+    let idx = 0;
+    if(code === 113 && tempC >= 30) idx = 1;
+    else if(code === 113) idx = 0;
+    else if([116,119,122].includes(code)) idx = 2;
+    else if([176,263,266,293,296,299,302,305,308,311,314,317,320,353,356,359].includes(code)) idx = 3;
+    else if(tempC < 18) idx = 4;
+    else idx = 0;
+    currentWeather = WEATHER_THEMES[idx];
+    document.getElementById('weatherIcon').textContent = currentWeather.icon;
+    document.getElementById('weatherText').textContent = `${currentWeather.label} · ${tempC}°C`;
+    document.getElementById('weatherSub').textContent = currentWeather.sub;
+    document.getElementById('ctxWeather').textContent = `${currentWeather.label} ${tempC}°C`;
+  } catch(e){
+    const d = new Date().getDate();
+    currentWeather = WEATHER_THEMES[d % WEATHER_THEMES.length];
+    document.getElementById('weatherIcon').textContent = currentWeather.icon;
+    document.getElementById('weatherText').textContent = currentWeather.label;
+    document.getElementById('weatherSub').textContent = currentWeather.sub;
+  }
+  if(currentWeather.theme) document.body.classList.add(currentWeather.theme);
+  currentWeather.decos.forEach((d,i)=>{
+    const el = document.getElementById('deco'+(i+1));
+    if(el) el.textContent = d;
+  });
+}
+
+document.querySelectorAll('.mood-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedMood = btn.dataset.mood;
+  });
+});
+
+document.querySelectorAll('.occ-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.occ-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedOcc = btn.dataset.occ;
+  });
+});
+
+function enterApp(){
+  document.getElementById('welcome').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('ctxWeather').textContent = currentWeather.label;
+  document.getElementById('ctxMood').textContent = selectedMood.charAt(0).toUpperCase()+selectedMood.slice(1);
+  document.getElementById('ctxOcc').textContent = selectedOcc.charAt(0).toUpperCase()+selectedOcc.slice(1);
+  renderWardrobe();
+}
+
+function showScreen(name, btn){
+  document.querySelectorAll('[id^=screen-]').forEach(s=>s.style.display='none');
+  document.getElementById('screen-'+name).style.display='block';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  if(name==='suggest') updateSuggestCtx();
+}
+
+function updateSuggestCtx(){
+  document.getElementById('ctxCount').textContent = clothes.length;
+}
+
+function openModal(){document.getElementById('modalOverlay').classList.add('open')}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.getElementById('clothName').value='';
+  document.getElementById('clothColor').value='';
+  document.getElementById('clothPhoto').value='';
+  document.getElementById('photoPreview').style.display='none';
+}
+
+function previewPhoto(input){
+  if(input.files&&input.files[0]){
+    const r=new FileReader();
+    r.onload=e=>{
+      const p=document.getElementById('photoPreview');
+      p.src=e.target.result;
+      p.style.display='block';
+    };
+    r.readAsDataURL(input.files[0]);
+  }
+}
+
+function saveCloth(){
+  const name=document.getElementById('clothName').value.trim();
+  if(!name){alert('Please enter a name!');return;}
+  const photo=document.getElementById('photoPreview').src;
+  const cloth={
+    id:Date.now(),
+    name,
+    cat:document.getElementById('clothCat').value,
+    color:document.getElementById('clothColor').value||'',
+    photo: photo && photo!==window.location.href ? photo : null
+  };
+  clothes.push(cloth);
+  localStorage.setItem('amirelle_clothes',JSON.stringify(clothes));
+  renderWardrobe();
+  closeModal();
+}
+
+function deleteCloth(id){
+  clothes=clothes.filter(c=>c.id!==id);
+  localStorage.setItem('amirelle_clothes',JSON.stringify(clothes));
+  renderWardrobe();
+}
+
+function filterCat(btn){
+  document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat=btn.dataset.cat;
+  renderWardrobe();
+}
+
+const CAT_EMOJI={tops:'👕',bottoms:'👖',dresses:'👗',shoes:'👟',accessories:'💍',outerwear:'🧥'};
+
+function renderWardrobe(){
+  const el=document.getElementById('cupboard');
+  const filtered=currentCat==='all'?clothes:clothes.filter(c=>c.cat===currentCat);
+  if(filtered.length===0){
+    el.innerHTML=`<div class="empty-wardrobe" style="grid-column:1/-1"><div class="big">👗</div><p>Your wardrobe is empty!<br>Add your first piece to get started.</p></div>`;
+    return;
+  }
+  el.innerHTML=filtered.map(c=>`
+    <div class="cloth-card">
+      <div class="cloth-img">
+        ${c.photo?`<img src="${c.photo}" alt="${c.name}">`:`<span>${CAT_EMOJI[c.cat]||'👔'}</span>`}
+      </div>
+      <div class="cloth-info">
+        <div class="cloth-name">${c.name}</div>
+        <div class="cloth-cat">${c.cat}${c.color?' · '+c.color:''}</div>
+      </div>
+      <button class="cloth-del" onclick="deleteCloth(${c.id})">×</button>
+    </div>
+  `).join('');
+}
+
+async function getOutfit(){
+  const apiKey=GEMINI_API_KEY;
+  if(clothes.length===0){
+    document.getElementById('resultBox').style.display='block';
+    document.getElementById('resultBox').innerHTML='<div class="no-clothes-msg">Add some clothes to your wardrobe first! 👗</div>';
+    return;
+  }
+
+  document.getElementById('suggestBtn').disabled=true;
+  document.getElementById('loadingStyle').style.display='block';
+  document.getElementById('resultBox').style.display='none';
+
+  const wardrobeList=clothes.map(c=>`- ${c.name} (${c.cat}${c.color?', '+c.color:''})`).join('\n');
+
+  const prompt=`You are Amirelle, a stylish AI fashion assistant. 
+  
+The user's wardrobe contains:
+${wardrobeList}
+
+Today's context:
+- Weather: ${currentWeather.label}
+- Mood: ${selectedMood}
+- Occasion: ${selectedOcc}
+
+Pick the BEST outfit combination from ONLY the items in the wardrobe above. 
+List the exact item names you chose (comma separated) on the first line starting with "ITEMS:".
+Then on a new line starting with "STYLE:", write 2-3 sentences describing the look in a fashionable, encouraging way. Make it feel like advice from a stylish friend.`;
+
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}]})
+    });
+    const data=await res.json();
+    if(data.error) throw new Error(data.error.message);
+    const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+
+    const itemsLine=text.split('\n').find(l=>l.startsWith('ITEMS:'));
+    const styleLine=text.split('\n').find(l=>l.startsWith('STYLE:'));
+    const itemNames=itemsLine?itemsLine.replace('ITEMS:','').trim().split(',').map(s=>s.trim()):[];
+    const styleDesc=styleLine?styleLine.replace('STYLE:','').trim():'You look amazing today!';
+
+    const chosenClothes=itemNames.map(name=>clothes.find(c=>c.name.toLowerCase()===name.toLowerCase())||clothes.find(c=>c.name.toLowerCase().includes(name.toLowerCase()))).filter(Boolean);
+
+    document.getElementById('loadingStyle').style.display='none';
+    document.getElementById('resultBox').style.display='block';
+    document.getElementById('resultOutfit').innerHTML=chosenClothes.length>0
+      ?chosenClothes.map(c=>`<div class="outfit-piece"><div class="piece-img">${c.photo?`<img src="${c.photo}" alt="${c.name}">`:`<span>${CAT_EMOJI[c.cat]||'👔'}</span>`}</div><div class="piece-label">${c.name}</div></div>`).join('')
+      :`<p style="color:var(--muted);font-size:14px">Suggested: ${itemNames.join(', ')}</p>`;
+    document.getElementById('resultDesc').textContent=styleDesc;
+
+  }catch(err){
+    document.getElementById('loadingStyle').style.display='none';
+    document.getElementById('resultBox').style.display='block';
+    document.getElementById('resultBox').innerHTML=`<p style="color:var(--muted)">Error: ${err.message}</p>`;
+  }
+  document.getElementById('suggestBtn').disabled=false;
+}
+
+initWeather();
+document.getElementById('screen-wardrobe').style.display='block';
+</script>
+</body>
+</html>
